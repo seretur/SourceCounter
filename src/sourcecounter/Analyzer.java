@@ -56,7 +56,7 @@ public class Analyzer {
                 while (itera.hasNext()){
                     JavaMethod metodo=itera.next();
                     CallCounter cc=new CallCounter(listaClases);
-                    int llamanThis=cc.contarLlamadadores(metodo.getName());
+                    int llamanThis=cc.contarLlamadores(metodo.getName());
                     CALL+=llamanThis;
                     if (metodo.isPublic())
                     {

@@ -25,7 +25,7 @@ public class CallCounter {
         clases=c;
     }
     
-    public int contarLlamadadores(String met){
+    public int contarLlamadores(String met){
         int ll=0;
         Iterator<JavaClass> it=clases.iterator();
         while (it.hasNext()){
@@ -38,23 +38,26 @@ public class CallCounter {
             // visit all methods
             while(itm.hasNext()){
                 JavaMethod actual=itm.next();
-                List<JavaType> parametros=actual.getParameterTypes();
-                Iterator itmet=parametros.iterator();
-                boolean ya=false;
-                while(itmet.hasNext() && !ya) {
-                    JavaType pactu=(JavaType)itmet.next();
-                    if (pactu.getFullyQualifiedName().indexOf(met)>=0){
-                        ll++;
-                        ya=true;
+                if (actual.getName().contains(met)){
+                    List<JavaType> parametros=actual.getParameterTypes();
+                    Iterator itmet=parametros.iterator();
+                    boolean ya=false;
+                    while(itmet.hasNext() && !ya) {
+                        JavaType pactu=(JavaType)itmet.next();
+                        if (pactu.getFullyQualifiedName().contains(met)){
+                            ll++;
+                            ya=true;
+                        }
+
                     }
-                    
-                }
-                
-                if (!ya){
-                    String fuente=actual.getSourceCode();
-                    if (fuente.indexOf(met)>=0){
-                        ll++;
+
+                    if (!ya){
+                        String fuente=actual.getSourceCode();
+                        if (fuente.indexOf(met)>=0){
+                            ll++;
+                        }
                     }
+                } else {
                 }
             }
         }
