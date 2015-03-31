@@ -9,6 +9,7 @@ package sourcecounter;
 import com.thoughtworks.qdox.model.JavaClass;
 import com.thoughtworks.qdox.model.JavaMethod;
 import com.thoughtworks.qdox.model.JavaType;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -20,14 +21,25 @@ import java.util.List;
 public class CallCounter {
     Collection<JavaClass>clases;
     String aver;
+    ArrayList<String> nombreClases;
     
     public CallCounter(Collection<JavaClass> c){
         clases=c;
+        Iterator itcl=clases.iterator();
+        nombreClases=new ArrayList<String>();
+        
+        //carga de nombres de clases
+        while(itcl.hasNext()){
+            JavaClass revisado=(JavaClass)itcl.next();
+            nombreClases.add(revisado.getName());
+        }
+        
     }
     
     public int contarLlamadores(String met){
         int ll=0;
         Iterator<JavaClass> it=clases.iterator();
+        
         while (it.hasNext()){
             //visit classes
             JavaClass visitado=it.next();
@@ -63,6 +75,33 @@ public class CallCounter {
         }
         
         return ll;
+    }
+    
+    public int differentCalls(){
+        int calls=0;
+        
+        
+        
+        
+        return calls;
+    }
+    
+    /**
+     * devuelve el fanOut(Henry y Kafura) de un método pasado por parámetro
+     * @param met JavaMethod método a analizar, instancia de JavaMethod
+     * @return suma de las clases referenciadas
+    */
+   
+    public int fanout(JavaMethod met){
+        int clasesReferidas=met.getParameterTypes().size();
+        String cuerpo=met.getSourceCode();
+        for (String nombreRevisado : nombreClases) {
+            if (cuerpo.contains(nombreRevisado)){
+                clasesReferidas++;
+            }
+        }
+        
+        return clasesReferidas;
     }
     
     

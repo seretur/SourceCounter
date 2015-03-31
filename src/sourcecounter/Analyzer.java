@@ -49,6 +49,7 @@ public class Analyzer {
             while (it.hasNext()){
                 JavaClass clase=it.next();
                 listaMetodos=clase.getMethods();
+                System.out.println("Revisando la clase "+clase.getName());
                 NOM+=listaMetodos.size();
                 
                 //browsing methods

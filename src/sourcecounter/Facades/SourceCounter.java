@@ -4,10 +4,13 @@
  * and open the template in the editor.
  */
 
-package sourcecounter;
+package sourcecounter.Facades;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import sourcecounter.Analyzer;
+import sourcecounter.Metric;
+import sourcecounter.MetricsList;
 // import java.util.ArrayList;
 
 
@@ -30,7 +33,7 @@ public class SourceCounter {
 //            System.out.println(itl.next());
 //        }
         
-        String s="/home/jorge/soft/javas/jfreesvg/jfreesvg-1.1";
+        String s="/home/jorge/NetBeansProjects/SourceCounter";
         if (args.length!=0){
             s=args[0];
         } 
@@ -47,6 +50,11 @@ public class SourceCounter {
         double ia=(double)metricas.getValue("CALL")/metricas.getValue("NOM");
         System.out.println("Estructuración de clases: "+ec);
         System.out.println("Intensidad de Acoplamiento: "+ia);
+        
+        double wmc=(double)metricas.getValue("CC")/metricas.getValue("NOM");
+        System.out.println("WMC: "+wmc);
+        
+        
         
     }
         
