@@ -14,14 +14,15 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 /**
  *
  * @author jorge
+ * Class for extract source metrics from a source directory 
  */
 public class Analyzer {
-    int NOM,NOC,CC,PM,CALL;
+    // Metrics Variables
+    int NOM,NOC,CC,PM,CALL,FOUT;
     
     public Analyzer(){
         NOM=0;
@@ -29,7 +30,13 @@ public class Analyzer {
         CC=1;
         PM=0;
         CALL=0;
+        FOUT=0;
     }
+    /**
+     * Capture a set of metrics from sources under a directory
+     * @param s root directory of sources to scan
+     * @param ml array list where metrics will be stored
+     */
     
     public void analyze(String s, MetricsList ml){
         JavaProjectBuilder project=new JavaProjectBuilder();
@@ -49,30 +56,40 @@ public class Analyzer {
             while (it.hasNext()){
                 JavaClass clase=it.next();
                 listaMetodos=clase.getMethods();
-                System.out.println("Revisando la clase "+clase.getName());
-                NOM+=listaMetodos.size();
-                
+                int totalMetodos=listaMetodos.size()+clase.getConstructors().size();
+                NOM+=totalMetodos;
+                System.out.println("Revisando la clase "+clase.getName()+" con "+totalMetodos);
                 //browsing methods
                 Iterator<JavaMethod> itera=listaMetodos.iterator();
                 while (itera.hasNext()){
                     JavaMethod metodo=itera.next();
                     CallCounter cc=new CallCounter(listaClases);
-                    int llamanThis=cc.contarLlamadores(metodo.getName());
+                    int llamanThis=cc.differentCalls(metodo);
                     CALL+=llamanThis;
                     if (metodo.isPublic())
                     {
                         PM+=1;
                     }
-                    
+                    FOUT+=cc.fanout(metodo);
+                    // get and 'clean' method source code
                     String fuente=metodo.getSourceCode();
+                    String copiaFuente=fuente;
+                    SourceCleaner cleaner=new SourceCleaner();
+                    if (cleaner.separate(fuente)){
+                       fuente=cleaner.getCleaned();
+                       copiaFuente=cleaner.getCommentLines();
+                    }
+                      
                     int j=1;
-                    Pattern patif;
-                    patif = Pattern.compile("if|else|case|default|catch|for|//&//&|//?");
-                    
-                   Matcher matif=patif.matcher(fuente);
-                   while (matif.find()){
-                       j++;
-                   }
+                    j=new CCCounter().getCC(fuente);
+                    if (j<3){
+                        System.out.println("Fuentes analizadas");
+                        System.out.println(metodo.getName());
+                        System.out.println(copiaFuente);;
+                        System.out.println("-------------");
+                        System.out.println(fuente);
+                    }
+                   
                    // System.out.println("CC del método "+metodo.getName()+":"+j);
                    CC+=j;
                     
@@ -89,6 +106,8 @@ public class Analyzer {
         ml.agregar(mcc);
         Metric mcall=new Metric("CALL",CALL);
         ml.agregar(mcall);
+        Metric mfout=new Metric("FOUT",FOUT);
+        ml.agregar(mfout);
         
          System.out.println("Finished");
         

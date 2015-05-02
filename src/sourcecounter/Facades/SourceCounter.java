@@ -33,7 +33,7 @@ public class SourceCounter {
 //            System.out.println(itl.next());
 //        }
         
-        String s="/home/jorge/NetBeansProjects/SourceCounter";
+        String s="/home/jorge/NetBeansProjects/SourceCounter/src";
         if (args.length!=0){
             s=args[0];
         } 

@@ -28,6 +28,7 @@ public class DirectoryReader {
     
     public ArrayList<String> getDirs(){
         File[] lar;
+        // muestra directorios en base a un filtro SoloDirs
         lar=actual.listFiles(new SoloDirs());
         for (int i=0; i<lar.length; i++){
             listArchivos.add(lar[i].getName());

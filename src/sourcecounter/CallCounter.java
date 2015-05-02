@@ -11,8 +11,11 @@ import com.thoughtworks.qdox.model.JavaMethod;
 import com.thoughtworks.qdox.model.JavaType;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -35,6 +38,12 @@ public class CallCounter {
         }
         
     }
+    /**
+     * This method iterates over all classes in the projects and counts 
+     * those who matches an specified method
+     * @param met method name
+     * @return 
+     */
     
     public int contarLlamadores(String met){
         int ll=0;
@@ -50,7 +59,7 @@ public class CallCounter {
             // visit all methods
             while(itm.hasNext()){
                 JavaMethod actual=itm.next();
-                if (actual.getName().contains(met)){
+            if (!actual.getName().equals(met)){
                     List<JavaType> parametros=actual.getParameterTypes();
                     Iterator itmet=parametros.iterator();
                     boolean ya=false;
@@ -69,7 +78,6 @@ public class CallCounter {
                             ll++;
                         }
                     }
-                } else {
                 }
             }
         }
@@ -77,12 +85,21 @@ public class CallCounter {
         return ll;
     }
     
-    public int differentCalls(){
+    public int differentCalls(JavaMethod metodo){
         int calls=0;
         
-        
-        
-        
+        String fuente=metodo.getSourceCode();
+        String[] lineas=fuente.split("\\n");
+        HashSet<String> llamadas=new HashSet<String>();
+        Pattern pattern1 = Pattern.compile("[a-zA-Z]*\\S[^(][(][a-zA-Z]*[)]");
+        for (String linea:lineas){
+            Matcher matcher=pattern1.matcher(linea);
+            if (matcher.find()){
+                    System.out.println (matcher.group(0));
+                    llamadas.add(matcher.group(0));
+                } 
+        }
+        calls=llamadas.size();
         return calls;
     }
     
@@ -93,7 +110,9 @@ public class CallCounter {
     */
    
     public int fanout(JavaMethod met){
+        // first, count different classes in parameters list
         int clasesReferidas=met.getParameterTypes().size();
+        // count classes referred inside method's code
         String cuerpo=met.getSourceCode();
         for (String nombreRevisado : nombreClases) {
             if (cuerpo.contains(nombreRevisado)){
