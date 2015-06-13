@@ -85,18 +85,30 @@ public class CallCounter {
         return ll;
     }
     
+    /**
+     * Compute different calls identified in a method source code
+     * This method extracts call candidates by using regular expressiones
+     * Then discards casts 
+     * And add the name to an HashSet 
+     * @param metodo method analyzed
+     * @return Number of different calls
+     */
+    
     public int differentCalls(JavaMethod metodo){
-        int calls=0;
+        int calls;
         
         String fuente=metodo.getSourceCode();
         String[] lineas=fuente.split("\\n");
-        HashSet<String> llamadas=new HashSet<String>();
+        HashSet<String> llamadas=new HashSet();
         Pattern pattern1 = Pattern.compile("[a-zA-Z]*\\S[^(][(][a-zA-Z]*[)]");
         for (String linea:lineas){
             Matcher matcher=pattern1.matcher(linea);
             if (matcher.find()){
-                    System.out.println (matcher.group(0));
-                    llamadas.add(matcher.group(0));
+                String retrieved=matcher.group(0);
+                if ((!retrieved.contains("=(")) && (!retrieved.contains("(("))){
+                    String methodName=retrieved.substring(0,retrieved.indexOf("("));
+                    llamadas.add(methodName);
+                    }
                 } 
         }
         calls=llamadas.size();

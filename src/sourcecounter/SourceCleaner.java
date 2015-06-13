@@ -1,7 +1,18 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2015 jorge Ramirez (seretur)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package sourcecounter;
@@ -11,11 +22,13 @@ package sourcecounter;
  * @author jorge
  */
 public class SourceCleaner {
-    int lc;
+    // lc: lineas comentadas. scl: líneas de código fuente
+    int lc,scl;
     String cleaned, comments;
     
     public SourceCleaner(){
         lc=0;
+        scl=0;
         cleaned="";
         comments="";
     }
@@ -28,7 +41,7 @@ public class SourceCleaner {
     public boolean separate(String sror){
         boolean resp=false;
         String[] lineas=sror.split("\\n");
-        System.out.println("Líneas del método: "+lineas.length);
+  //      System.out.println("Líneas del método: "+lineas.length);
         for (String linea : lineas) {
             String l = linea.trim();
             l=l+"\n";
@@ -37,7 +50,22 @@ public class SourceCleaner {
                 lc++;
                 //System.out.println(l);
             } else {
-                cleaned=cleaned.concat(l);
+                if (l.length()>0){
+                    // delete text within quotes
+                    l=l.replaceAll("\"[^\"]+\"","");
+                    l=l.replaceAll("'[^\"]+'","");
+                    l=l.replaceAll("`[^\"]+`","");
+                    // remove comments at the end of line
+                    int slashPos=cleaned.lastIndexOf("//");
+                    if (slashPos>0){
+                        l=l.substring(0,slashPos);
+                        lc++;
+                    }
+                    
+                    cleaned=cleaned.concat(l);
+                    
+                    scl++;
+                }
             }
         }
         if (cleaned.length()>0){
@@ -61,9 +89,24 @@ public class SourceCleaner {
     public String getCleaned(){
         return cleaned;
     }
+    /**
+     * 
+     * @return String with all commented lines
+     */
     
-    public String getCommentLines(){
+    public String getCommentingLines(){
         return comments;
+    }
+    
+    //getter for Commenting Lines Number (CL)
+    
+    public int getCLNumber(){
+        return lc;
+    }
+    
+    //getter for Source Code Number (CL)
+    public int getSCL(){
+        return scl;
     }
     
 }
