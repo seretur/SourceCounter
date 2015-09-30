@@ -1,7 +1,18 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2015 jorge Ramirez (seretur)
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package sourcecounter;
@@ -24,13 +35,16 @@ import java.util.regex.Pattern;
 public class CallCounter {
     Collection<JavaClass>clases;
     String aver;
-    ArrayList<String> nombreClases;
+    HashSet<String> nombreClases;
+    boolean yaContados;
+    int fouts;
     
     public CallCounter(Collection<JavaClass> c){
         clases=c;
         Iterator itcl=clases.iterator();
-        nombreClases=new ArrayList<String>();
-        
+        nombreClases=new HashSet<String>();
+        yaContados=false;
+        fouts=0;
         //carga de nombres de clases
         while(itcl.hasNext()){
             JavaClass revisado=(JavaClass)itcl.next();
@@ -94,23 +108,35 @@ public class CallCounter {
      * @return Number of different calls
      */
     
-    public int differentCalls(JavaMethod metodo){
+    public int differentCalls(String fn, JavaClass clase, String nm){
         int calls;
-        
-        String fuente=metodo.getSourceCode();
+        fouts=0;
+        System.out.println("Revisado método "+nm+" de "+clase.getName());
+        String fuente=fn;
         String[] lineas=fuente.split("\\n");
         HashSet<String> llamadas=new HashSet();
         Pattern pattern1 = Pattern.compile("[a-zA-Z]*\\S[^(][(][a-zA-Z]*[)]");
         for (String linea:lineas){
-            Matcher matcher=pattern1.matcher(linea);
-            if (matcher.find()){
-                String retrieved=matcher.group(0);
-                if ((!retrieved.contains("=(")) && (!retrieved.contains("(("))){
-                    String methodName=retrieved.substring(0,retrieved.indexOf("("));
-                    llamadas.add(methodName);
-                    }
-                } 
+        Matcher matcher=pattern1.matcher(linea);
+        while (matcher.find()){
+          String retrieved=matcher.group(0);
+          if ((!retrieved.contains("=(")) && (!retrieved.contains("((")) && (! retrieved.contains("return"))){
+           String methodName=retrieved.substring(0,retrieved.indexOf("("));
+           llamadas.add(methodName);
+           System.out.println("llamada "+methodName+" desde el método "+nm+" de la clase "+clase);
+           for (JavaClass revisante:clases){
+               if (!revisante.equals(clase)){
+                   if (isAMethodOf(methodName,revisante)){
+                       System.out.println("Hallado "+methodName+" de la clase "+revisante.getName());
+                   fouts++; //descartar llamadas a la clase en revisación
+                   break;
+                   }                   
+               }
+             }
+               }
+            } 
         }
+        yaContados=true;
         calls=llamadas.size();
         return calls;
     }
@@ -121,20 +147,36 @@ public class CallCounter {
      * @return suma de las clases referenciadas
     */
    
-    public int fanout(JavaMethod met){
+    public int fanout(String nm, String fnt, JavaClass deClase){
         // first, count different classes in parameters list
-        int clasesReferidas=met.getParameterTypes().size();
-        // count classes referred inside method's code
-        String cuerpo=met.getSourceCode();
-        for (String nombreRevisado : nombreClases) {
-            if (cuerpo.contains(nombreRevisado)){
-                clasesReferidas++;
-            }
+        int resul=0;
+        if (yaContados) {
+            resul=fouts;
+        } else {
+            int calls=differentCalls(fnt,deClase,nm);
+            resul=fouts;
         }
-        
-        return clasesReferidas;
+        yaContados=false;
+        return resul;
     }
     
-    
+    public boolean isAMethodOf(String met, JavaClass c){
+    List<JavaMethod> metodos=c.getMethods();
+    // HashSet<String> nombresMetodos=new HashSet<String>();
+    boolean esta=false;
+    if (met.equals(c.getName())){
+        esta=true;
+    }
+    for (JavaMethod metact:metodos){ 
+        if (esta) {
+            break;
+           }
+        String nombreActual=metact.getName();
+        if (nombreActual.equals(met)){
+            esta=true;
+        }  
+    }
+    return esta;
+}
     
 }

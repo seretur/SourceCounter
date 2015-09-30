@@ -18,6 +18,7 @@
 package sourcecounter;
 import com.thoughtworks.qdox.JavaProjectBuilder;
 import com.thoughtworks.qdox.model.JavaClass;
+import com.thoughtworks.qdox.model.JavaConstructor;
 import com.thoughtworks.qdox.model.JavaMethod;
 import java.io.File;
 import java.io.IOException;
@@ -33,21 +34,10 @@ import java.util.List;
  */
 public class Analyzer {
     // Metrics Variables
-    
+     // define representing metrics variables
+        int NOM,NOC,CC,PM,CALL,FOUT,MSLOC,MCL;
     
     public Analyzer(){
-       
-    }
-    /**
-     * Capture a set of metrics from sources under a directory
-     * @param s root directory of sources to scan
-     * @param ml array list where metrics will be stored
-     */
-    
-    public void analyze(String s, MetricsList ml){
-        // define representing metrics variables
-        int NOM,NOC,CC,PM,CALL,FOUT,MSLOC,MCL;
-        
         // initialize all variables
         NOM=0;
         NOC=0;
@@ -57,6 +47,14 @@ public class Analyzer {
         FOUT=0;
         MSLOC=0;
         MCL=0;
+    }
+    /**
+     * Capture a set of metrics from sources under a directory
+     * @param s root directory of sources to scan
+     * @param ml array list where metrics will be stored
+     */
+    
+    public void analyze(String s, MetricsList ml){  
         
         JavaProjectBuilder project=new JavaProjectBuilder();
         System.out.println("Starting...");
@@ -74,26 +72,40 @@ public class Analyzer {
             Iterator<JavaClass> it=listaClases.iterator();
             while (it.hasNext()){
                 JavaClass clase=it.next();
-                System.out.println(clase.getName());
                 listaMetodos=clase.getMethods();
                 int totalMetodos=listaMetodos.size()+clase.getConstructors().size();
                 NOM+=totalMetodos;
- //               System.out.println("Revisando la clase "+clase.getName()+" con "+totalMetodos);
-                //browsing methods. TODO: refactor to separate responsabilities
+                
+                // extracting metrics from constructors
+                List<JavaConstructor> constructores=clase.getConstructors();
+                Iterator itCo=constructores.iterator();
+                while(itCo.hasNext()){
+                    JavaConstructor cons=(JavaConstructor)itCo.next();
+                    CallCounter cc=new CallCounter(listaClases);
+                    int llamanThis=cc.differentCalls(cons.getSourceCode(),clase,cons.getName());
+                    String fuenteCons=cons.getSourceCode();
+                    CALL+=llamanThis;
+                    FOUT+=cc.fanout(cons.getName(),fuenteCons,clase);
+                    int j=1;
+                    j=new CCCounter().getCC(fuenteCons);
+                    CC+=j;
+                }
+                
                 Iterator<JavaMethod> itera=listaMetodos.iterator();
                 while (itera.hasNext()){
                     JavaMethod metodo=itera.next();
                     CallCounter cc=new CallCounter(listaClases);
-                    int llamanThis=cc.differentCalls(metodo);
+                    int llamanThis=cc.differentCalls(metodo.getSourceCode(),clase,metodo.getName());
                     CALL+=llamanThis;
                     if (metodo.isPublic())
                     {
                         PM+=1;
                     }
-                    FOUT+=cc.fanout(metodo);
+                   
                     // get and 'clean' method source code
                     String fuente=metodo.getSourceCode();
                     String copiaFuente=fuente;
+                    FOUT+=cc.fanout(metodo.getName(),fuente,clase);
                     SourceCleaner cleaner=new SourceCleaner();
                     if (cleaner.separate(fuente)){
                        fuente=cleaner.getCleaned();
@@ -104,15 +116,6 @@ public class Analyzer {
                       
                     int j=1;
                     j=new CCCounter().getCC(fuente);
-//                    if (j<3){
-//                        System.out.println("Fuentes analizadas");
-//                        System.out.println(metodo.getName());
-//                        System.out.println(copiaFuente);;
-//                        System.out.println("-------------");
-//                        System.out.println(fuente);
-//                    }
-                   
-                   // System.out.println("CC del método "+metodo.getName()+":"+j);
                    CC+=j;
                     
                 }
@@ -124,7 +127,7 @@ public class Analyzer {
         // metric list adding to ml
         Metric mnom=new Metric("NOM",NOM);
         ml.agregar(mnom);
-        Metric mpn=new Metric("PN",PM);
+        Metric mpn=new Metric("PM",PM);
         ml.agregar(mpn);
         Metric mcc=new Metric("CC",CC);
         ml.agregar(mcc);

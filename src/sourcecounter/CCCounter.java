@@ -38,8 +38,9 @@ public class CCCounter {
       cc=1;
       
            Pattern patif;
+           String paths="if|for|while|case|catch|\\|\\|\\?|&&";
            
-           patif = Pattern.compile("if|for|while|case|catch|\\|\\|/?|&&");
+           patif = Pattern.compile(paths);
            Matcher matif=patif.matcher(fuente);
            int fd=0;
            while (matif.find()){

@@ -41,7 +41,7 @@ public class SourceCounter {
         Double maxia=0.66;
         Double maxec=13.0;
  
-        String s="/home/jorge/soft/javas/jfig/jfig-1.4.2/src";
+        String s="/home/jorge/Documentos/UNSa/videojuegos/desarrollos/azares";
         if (args.length!=0){
             s=args[0];
         } 
