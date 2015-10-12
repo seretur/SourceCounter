@@ -111,7 +111,7 @@ public class CallCounter {
     public int differentCalls(String fn, JavaClass clase, String nm){
         int calls;
         fouts=0;
-        System.out.println("Revisado método "+nm+" de "+clase.getName());
+        // System.out.println("Revisado método "+nm+" de "+clase.getName());
         String fuente=fn;
         String[] lineas=fuente.split("\\n");
         HashSet<String> llamadas=new HashSet();
@@ -123,7 +123,7 @@ public class CallCounter {
           if ((!retrieved.contains("=(")) && (!retrieved.contains("((")) && (! retrieved.contains("return"))){
            String methodName=retrieved.substring(0,retrieved.indexOf("("));
            llamadas.add(methodName);
-           System.out.println("llamada "+methodName+" desde el método "+nm+" de la clase "+clase);
+           // System.out.println("llamada "+methodName+" desde el método "+nm+" de la clase "+clase);
            for (JavaClass revisante:clases){
                if (!revisante.equals(clase)){
                    if (isAMethodOf(methodName,revisante)){
